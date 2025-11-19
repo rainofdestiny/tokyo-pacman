@@ -1,76 +1,90 @@
 import React, { useRef } from 'react';
-import { useGameLoop } from '../game/useGameLoop';
+// Правильный путь к хуку
+import { useGameLoop } from '../hooks/useGame';
+// Правильный путь к конфигу
 import {
     TILE_SIZE, COLS, ROWS,
-    DASH_COOLDOWN, EMP_COOLDOWN, INVIS_COOLDOWN
-} from '../game/constants';
+    BLINK_COOLDOWN, EMP_COOLDOWN, INVIS_COOLDOWN,
+    UNLOCK_SCORE_BLINK, UNLOCK_SCORE_INVIS, UNLOCK_SCORE_EMP
+} from '../config/constants';
 import Leaderboard from './Leaderboard';
 
 const TokyoPacman = () => {
     const canvasRef = useRef(null);
     const { score, gameOver, gameStarted, dashCD, invisCD, empCD, isInvis, initGame, getGameDuration } = useGameLoop(canvasRef);
 
-    const getProgress = (current, max) => {
-        if (current === 0) return 100;
-        return ((max - current) / max) * 100;
-    };
-
-    const dashPct = getProgress(dashCD, DASH_COOLDOWN);
+    const getProgress = (current, max) => { if (current === 0) return 100; return ((max - current) / max) * 100; };
+    const dashPct = getProgress(dashCD, BLINK_COOLDOWN);
     const empPct = getProgress(empCD, EMP_COOLDOWN);
     const ghostPct = getProgress(invisCD, INVIS_COOLDOWN);
+
+    const canvasHeight = ROWS * TILE_SIZE;
+    const skillsHeight = 50;
+    const gap = 15;
+    const borderOffset = 4;
+    const totalCenterHeight = canvasHeight + borderOffset + gap + skillsHeight;
+
+    const renderSkill = (keyCode, name, currentCD, maxCD, pct, unlockScore, isActive = false) => {
+        const isLocked = score < unlockScore;
+        if (isLocked) {
+            return (
+                <div className="skill-row locked">
+                    <div className="skill-content">
+                        <span className="key-badge locked-badge">LOCK</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1' }}>
+                            <span className="skill-label locked-text">{name}</span>
+                            <span className="skill-unlock-hint">{unlockScore} PTS</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        return (
+            <div className={`skill-row ${currentCD === 0 ? 'ready' : 'cooldown'} ${isActive ? 'active' : ''}`}>
+                <div className="skill-progress-bar" style={{ width: `${pct}%` }}></div>
+                <div className="skill-content">
+                    <span className="key-badge">{keyCode}</span>
+                    <span className="skill-label">{isActive ? 'ACTIVE' : name}</span>
+                </div>
+            </div>
+        );
+    };
 
     return (
         <div className="layout-wrapper">
 
-            {/* ЛЕВАЯ ПАНЕЛЬ */}
-            <div className="panel left-panel">
+            {/* ЛЕВАЯ ПАНЕЛЬ: ОЧКИ + ЛИДЕРБОРД */}
+            <div className="panel left-panel" style={{ height: totalCenterHeight }}>
                 <div className="panel-content">
-                    <h2 className="panel-title">SYSTEM</h2>
 
-                    <div className="stat-block">
+                    <div className="stat-block" style={{ marginBottom: '20px' }}>
                         <div className="stat-label">SCORE</div>
                         <div className="stat-value">{score}</div>
                     </div>
 
-                    <div className="skills-container">
-                        {/* ... (код скиллов без изменений) ... */}
-                        <div className={`skill-row ${dashCD === 0 ? 'ready' : 'cooldown'}`}>
-                            <div className="skill-progress-bar" style={{ width: `${dashPct}%` }}></div>
-                            <div className="skill-content">
-                                <span className="key-badge" style={{ minWidth: '60px' }}>SPACE</span>
-                                <span className="skill-label">DASH</span>
-                            </div>
-                        </div>
-
-                        <div className={`skill-row ${empCD === 0 ? 'ready' : 'cooldown'}`}>
-                            <div className="skill-progress-bar" style={{ width: `${empPct}%` }}></div>
-                            <div className="skill-content">
-                                <span className="key-badge">Q</span>
-                                <span className="skill-label">EMP BLAST</span>
-                            </div>
-                        </div>
-
-                        <div className={`skill-row ${isInvis ? 'active' : (invisCD === 0 ? 'ready' : 'cooldown')}`}>
-                            <div className="skill-progress-bar" style={{ width: isInvis ? '100%' : `${ghostPct}%` }}></div>
-                            <div className="skill-content">
-                                <span className="key-badge">E</span>
-                                <span className="skill-label">{isInvis ? 'ACTIVE' : 'GHOST'}</span>
-                            </div>
-                        </div>
+                    <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                        {/*
+                    Передаем счет для авто-сохранения при проигрыше.
+                    Кнопки нет (showButton={false}).
+                 */}
+                        <Leaderboard
+                            currentScore={gameOver ? score : 0}
+                            onRetry={() => { }}
+                            showButton={false}
+                        />
                     </div>
+
                 </div>
             </div>
 
-            {/* ЦЕНТР */}
-            <div className="game-center">
+            {/* ЦЕНТР: ИГРА + СКИЛЛЫ */}
+            <div className="game-center" style={{ display: 'flex', flexDirection: 'column', gap: `${gap}px` }}>
                 <div className="canvas-border">
                     <canvas ref={canvasRef} width={COLS * TILE_SIZE} height={ROWS * TILE_SIZE} />
 
                     {(!gameStarted || gameOver) && (
                         <div className="game-overlay">
                             <h1 className="glitch-text">TOKYO<br />PACMAN</h1>
-                            {gameOver && <h3 className="game-over-text">MISSION FAILED</h3>}
-                            {gameOver && <div className="final-score">SCORE: {score}</div>}
 
                             {!gameStarted ? (
                                 <div style={{ textAlign: 'center' }}>
@@ -79,50 +93,74 @@ const TokyoPacman = () => {
                                     </button>
                                 </div>
                             ) : (
-                                <Leaderboard
-                                    currentScore={score}
-                                    gameDuration={getGameDuration()}
-                                    onRetry={initGame}
-                                />
+                                // ЭКРАН ПРОИГРЫША (ТОЛЬКО КНОПКА)
+                                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                    <h3 className="game-over-text">MISSION FAILED</h3>
+                                    <div className="final-score" style={{ marginBottom: '30px' }}>
+                                        FINAL SCORE: <span style={{ color: '#fff' }}>{score}</span>
+                                    </div>
+
+                                    <button className="start-btn" onClick={initGame}>
+                                        Restart [R]
+                                    </button>
+                                </div>
                             )}
                         </div>
                     )}
                 </div>
+
+                <div className="skills-container" style={{ height: `${skillsHeight}px`, margin: 0 }}>
+                    {renderSkill("SPACE", "BLINK", dashCD, BLINK_COOLDOWN, dashPct, UNLOCK_SCORE_BLINK)}
+                    {renderSkill("Q", "EMP", empCD, EMP_COOLDOWN, empPct, UNLOCK_SCORE_EMP)}
+                    {renderSkill("E", "GHOST", invisCD, INVIS_COOLDOWN, ghostPct, UNLOCK_SCORE_INVIS, isInvis)}
+                </div>
             </div>
 
-            {/* ПРАВАЯ ПАНЕЛЬ */}
-            <div className="panel right-panel">
+            {/* ПРАВАЯ ПАНЕЛЬ: ПРИЗРАКИ */}
+            <div className="panel right-panel" style={{ height: totalCenterHeight }}>
                 <div className="panel-content">
-                    {/* ИЗМЕНЕНИЕ 4: Заголовок */}
                     <h2 className="panel-title danger">GHOSTS</h2>
-
                     <div className="ghost-list">
                         <div className="ghost-item" style={{ borderColor: '#ff0044' }}>
                             <div className="ghost-head" style={{ background: '#ff0044' }}></div>
-                            <div>
-                                <div className="ghost-name" style={{ color: '#ff0044' }}>TRACKER</div>
-                                <div className="ghost-desc">Smart AI. Finds path.</div>
+                            <div className="ghost-data">
+                                <div className="ghost-name" style={{ color: '#ff0044' }}>HUNTER</div>
+                                <div className="ghost-desc">Relentless pursuit.</div>
                             </div>
                         </div>
                         <div className="ghost-item" style={{ borderColor: '#00ffff' }}>
                             <div className="ghost-head" style={{ background: '#00ffff' }}></div>
-                            <div>
+                            <div className="ghost-data">
                                 <div className="ghost-name" style={{ color: '#00ffff' }}>SPEEDSTER</div>
-                                <div className="ghost-desc">Very fast movement.</div>
+                                <div className="ghost-desc">Extreme velocity.</div>
                             </div>
                         </div>
                         <div className="ghost-item" style={{ borderColor: '#ff55ff' }}>
                             <div className="ghost-head" style={{ background: '#ff55ff' }}></div>
-                            <div>
+                            <div className="ghost-data">
                                 <div className="ghost-name" style={{ color: '#ff55ff' }}>AMBUSHER</div>
-                                <div className="ghost-desc">Intercepts your path.</div>
+                                <div className="ghost-desc">Intercepts path.</div>
                             </div>
                         </div>
                         <div className="ghost-item" style={{ borderColor: '#ffaa00' }}>
                             <div className="ghost-head" style={{ background: '#ffaa00' }}></div>
-                            <div>
+                            <div className="ghost-data">
                                 <div className="ghost-name" style={{ color: '#ffaa00' }}>GLITCH</div>
-                                <div className="ghost-desc">Teleports randomly.</div>
+                                <div className="ghost-desc">Random teleports.</div>
+                            </div>
+                        </div>
+                        <div className="ghost-item" style={{ borderColor: '#ffffff' }}>
+                            <div className="ghost-head" style={{ background: '#ffffff' }}></div>
+                            <div className="ghost-data">
+                                <div className="ghost-name" style={{ color: '#ffffff' }}>GEMINI</div>
+                                <div className="ghost-desc">Splits & merges.</div>
+                            </div>
+                        </div>
+                        <div className="ghost-item" style={{ borderColor: '#8a2be2' }}>
+                            <div className="ghost-head" style={{ background: '#8a2be2' }}></div>
+                            <div className="ghost-data">
+                                <div className="ghost-name" style={{ color: '#8a2be2' }}>PHANTOM</div>
+                                <div className="ghost-desc">Walks through walls.</div>
                             </div>
                         </div>
                     </div>

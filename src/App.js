@@ -1,5 +1,6 @@
 import React from 'react';
-import './App.css';
+// ИСПРАВЛЕНО: путь к стилям теперь в папке styles
+import './styles/App.css';
 import TokyoPacman from './components/TokyoPacman';
 
 function App() {
