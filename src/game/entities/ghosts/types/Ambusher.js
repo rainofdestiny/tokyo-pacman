@@ -1,4 +1,3 @@
-```javascript
 import { Ghost } from '../Ghost';
 import { getNextStepAStar } from '../../../utils/physics';
 
@@ -12,4 +11,3 @@ export class Ambusher extends Ghost {
         return getNextStepAStar(state.grid, this.x, this.y, targetX, targetY);
     }
 }
-```
