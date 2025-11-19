@@ -133,7 +133,7 @@ const TokyoPacman = () => {
                 <div className="skills-container" style={{ height: `${skillsHeight}px`, margin: 0 }}>
                     {renderSkill("SPACE", "BLINK", dashCD, BLINK_COOLDOWN, dashPct, UNLOCK_SCORE_BLINK)}
                     {renderSkill("Q", "EMP", empCD, EMP_COOLDOWN, empPct, UNLOCK_SCORE_EMP)}
-                    {renderSkill("E", "GHOST", invisCD, INVIS_COOLDOWN, ghostPct, UNLOCK_SCORE_INVIS, isInvis)}
+                    {renderSkill("F", "GHOST", invisCD, INVIS_COOLDOWN, ghostPct, UNLOCK_SCORE_INVIS, isInvis)}
                 </div>
             </div>
 

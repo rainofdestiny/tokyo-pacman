@@ -15,10 +15,12 @@ export const useGameLoop = (canvasRef) => {
     const [gameOver, setGameOver] = useState(false);
     const [gameStarted, setGameStarted] = useState(false);
 
-    const [dashCD, setDashCD] = useState(0);
-    const [invisCD, setInvisCD] = useState(0);
-    const [empCD, setEmpCD] = useState(0);
-    const [isInvis, setIsInvis] = useState(false);
+    const [abilities, setAbilities] = useState({
+        dashCD: 0,
+        invisCD: 0,
+        empCD: 0,
+        isInvis: false
+    });
 
     const isGameOverRef = useRef(false);
     const gameStartTimeRef = useRef(Date.now());
@@ -28,7 +30,8 @@ export const useGameLoop = (canvasRef) => {
         player: { x: 0, y: 0, dirX: 0, dirY: 0, nextDirX: 0, nextDirY: 0, rotation: 0, empTimer: 0 },
         ghosts: [],
         ghostsSpawned: 0,
-        levelCompleting: false
+        levelCompleting: false,
+        remainingDots: 0
     });
 
     const getGameDuration = () => (Date.now() - gameStartTimeRef.current) / 1000;
@@ -40,6 +43,13 @@ export const useGameLoop = (canvasRef) => {
         const pX = playerSpot.x * TILE_SIZE + TILE_SIZE / 2;
         const pY = playerSpot.y * TILE_SIZE + TILE_SIZE / 2;
 
+        let dotCount = 0;
+        grid.forEach(row => {
+            row.forEach(tile => {
+                if (tile === 2) dotCount++;
+            });
+        });
+
         gameState.current = {
             grid, frame: 0, score: 0, particles: [],
             player: {
@@ -48,10 +58,10 @@ export const useGameLoop = (canvasRef) => {
             },
             ghosts: [],
             ghostsSpawned: 0,
-            levelCompleting: false
+            levelCompleting: false,
+            remainingDots: dotCount
         };
 
-        // Спавн 3 случайных призраков со старта
         for (let i = 0; i < 3; i++) {
             spawnRandomGhost(gameState.current);
         }
@@ -129,10 +139,12 @@ export const useGameLoop = (canvasRef) => {
             // Обновляем UI (не каждый кадр, а раз в несколько кадров для производительности)
             const p = gameState.current.player;
             if (!isGameOverRef.current && gameState.current.frame % 10 === 0) {
-                setDashCD(p.dashTimer);
-                setInvisCD(p.invisTimer);
-                setEmpCD(p.empTimer);
-                setIsInvis(p.invisActive > 0);
+                setAbilities({
+                    dashCD: p.dashTimer,
+                    invisCD: p.invisTimer,
+                    empCD: p.empTimer,
+                    isInvis: p.invisActive > 0
+                });
             }
 
             animationId = requestAnimationFrame(loop);
@@ -195,12 +207,12 @@ export const useGameLoop = (canvasRef) => {
             }
             // Способности
             else if (e.code === 'Space') {
-                if (curScore >= UNLOCK_SCORE_BLINK && p.dashTimer === 0) {
+                if (p.dashTimer === 0) {
                     performBlink(s);
                 }
                 return;
-            } else if (e.code === 'KeyE') {
-                if (curScore >= UNLOCK_SCORE_INVIS && p.invisTimer === 0) {
+            } else if (e.code === 'KeyF') {
+                if (p.invisTimer === 0) {
                     p.invisActive = INVIS_DURATION;
                     p.invisTimer = INVIS_COOLDOWN;
                     s.particles.push({
@@ -212,7 +224,7 @@ export const useGameLoop = (canvasRef) => {
                 }
                 return;
             } else if (e.code === 'KeyQ') {
-                if (curScore >= UNLOCK_SCORE_EMP && p.empTimer === 0) {
+                if (p.empTimer === 0) {
                     performEMP(s);
                 }
                 return;
@@ -276,10 +288,10 @@ export const useGameLoop = (canvasRef) => {
         score,
         gameOver,
         gameStarted,
-        dashCD,
-        invisCD,
-        empCD,
-        isInvis,
+        dashCD: abilities.dashCD,
+        invisCD: abilities.invisCD,
+        empCD: abilities.empCD,
+        isInvis: abilities.isInvis,
         initGame,
         getGameDuration
     };

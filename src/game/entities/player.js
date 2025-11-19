@@ -5,14 +5,10 @@ export const performBlink = (state) => {
     const p = state.player;
     const dist = TILE_SIZE * 4;
 
-    let dx = p.dirX;
-    let dy = p.dirY;
-
-    // Если стоим на месте - берем направление поворота
-    if (dx === 0 && dy === 0) {
-        if (Math.abs(Math.cos(p.rotation)) > 0.5) dx = Math.sign(Math.cos(p.rotation));
-        else dy = Math.sign(Math.sin(p.rotation));
-    }
+    // Use gaze direction (rotation) for blink
+    // This allows blinking in a direction different from current movement
+    let dx = Math.round(Math.cos(p.rotation));
+    let dy = Math.round(Math.sin(p.rotation));
 
     // Рассчитываем целевую точку
     let landX = p.x + dx * dist;

@@ -19,16 +19,17 @@ const countRemainingDots = (grid) => {
 
 // Регенерирует точки на карте
 const regenerateDots = (state) => {
+    let dotCount = 0;
     for (let y = 0; y < state.grid.length; y++) {
         for (let x = 0; x < state.grid[y].length; x++) {
-            // Ставим точку везде, где не стена
             if (state.grid[y][x] === EMPTY) {
                 state.grid[y][x] = DOT;
+                dotCount++;
             }
         }
     }
+    state.remainingDots = dotCount;
 
-    // Эффект регенерации - волна частиц
     const centerX = (state.grid[0].length * TILE_SIZE) / 2;
     const centerY = (state.grid.length * TILE_SIZE) / 2;
 
@@ -44,7 +45,6 @@ const regenerateDots = (state) => {
         });
     }
 
-    // Большая волна для драматического эффекта
     state.particles.push({
         type: 'shockwave',
         x: centerX,
@@ -56,12 +56,19 @@ const regenerateDots = (state) => {
 
 export const updateGame = (state, setScore, handleGameOver, isGameOver) => {
     state.frame++;
-    state.particles = state.particles.filter(pt => pt.life > 0);
-    state.particles.forEach(pt => {
+
+    const particleCount = state.particles.length;
+    let aliveCount = 0;
+    for (let i = 0; i < particleCount; i++) {
+        const pt = state.particles[i];
         pt.x += pt.vx || 0;
         pt.y += pt.vy || 0;
         pt.life--;
-    });
+        if (pt.life > 0) {
+            state.particles[aliveCount++] = pt;
+        }
+    }
+    state.particles.length = aliveCount;
 
     if (isGameOver) return;
 
@@ -72,6 +79,7 @@ export const updateGame = (state, setScore, handleGameOver, isGameOver) => {
     if (state.grid[gy] && state.grid[gy][gx] === DOT) {
         state.grid[gy][gx] = EMPTY;
         state.score += 1;
+        state.remainingDots--;
         setScore(state.score);
 
         if (state.score > 0 && state.score % SPAWN_GHOST_SCORE_STEP === 0 && state.ghostsSpawned < state.score / SPAWN_GHOST_SCORE_STEP) {
@@ -80,18 +88,13 @@ export const updateGame = (state, setScore, handleGameOver, isGameOver) => {
         }
     }
 
-    // Проверяем, не съели ли все точки (проверяем каждый кадр)
-    const remainingDots = countRemainingDots(state.grid);
-    if (remainingDots === 0 && !state.levelCompleting) {
-        // Уровень пройден! Регенерируем точки
+    if (state.remainingDots === 0 && !state.levelCompleting) {
         state.levelCompleting = true;
         regenerateDots(state);
 
-        // Бонус за прохождение уровня
         state.score += 50;
         setScore(state.score);
 
-        // Сбрасываем флаг через небольшую задержку
         setTimeout(() => {
             if (state.levelCompleting) {
                 state.levelCompleting = false;
@@ -104,6 +107,5 @@ export const updateGame = (state, setScore, handleGameOver, isGameOver) => {
     if (state.player.invisActive > 0) state.player.invisActive--;
     if (state.player.empTimer > 0) state.player.empTimer--;
 
-    // Передаем фиксированную дельту времени (1 тик = 1/60 секунды)
     updateGhosts(state, 1 / TICK_RATE, handleGameOver);
 };
