@@ -8,7 +8,7 @@ export const GHOST_SURGE_SPEED = 5;
 
 // Тайминги
 export const BLINK_COOLDOWN = 5 * 60;
-export const INVIS_COOLDOWN = 30 * 60;
+export const INVIS_COOLDOWN = 20 * 60;
 export const INVIS_DURATION = 5 * 60;
 export const EMP_COOLDOWN = 10 * 60;
 export const EMP_DURATION = 3 * 60;
@@ -23,10 +23,10 @@ export const PHANTOM_PHASE_DURATION = 5 * 60; // Время прохода ск�
 export const PHANTOM_COOLDOWN = 15 * 60;       // Перезарядка (~15 сек)
 
 export const UNLOCK_SCORE_BLINK = 10;
-export const UNLOCK_SCORE_EMP = 50;
-export const UNLOCK_SCORE_INVIS = 100;
+export const UNLOCK_SCORE_EMP = 25;
+export const UNLOCK_SCORE_INVIS = 50;
 
-export const SPAWN_GHOST_SCORE_STEP = 500;
+export const SPAWN_GHOST_SCORE_STEP = 50;
 
 export const EMPTY = 0;
 export const WALL = 1;
