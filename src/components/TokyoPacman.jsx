@@ -183,7 +183,7 @@ const TokyoPacman = () => {
                                 <div className="ghost-desc">Splits & merges.</div>
                             </div>
                         </div>
-                        <div className="ghost-item" style={{ borderColor: '#5fdf89' }}>
+                        {/* <div className="ghost-item" style={{ borderColor: '#5fdf89' }}>
                             <div className="ghost-head" style={{ background: '#5fdf89' }}></div>
                             <div className="ghost-data">
                                 <div className="ghost-name" style={{ color: '#5fdf89' }}>TRIXTER [SOON]</div>
@@ -196,7 +196,7 @@ const TokyoPacman = () => {
                                 <div className="ghost-name" style={{ color: '#E37209' }}>ORACLE [SOON]</div>
                                 <div className="ghost-desc">Predicts the position.</div>
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
             </div>
