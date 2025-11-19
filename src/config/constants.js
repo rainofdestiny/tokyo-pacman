@@ -64,7 +64,7 @@ export const SPEEDSTER_SLOW_MULTIPLIER = 0.75;
 // Ambusher-specific parameters
 export const AMBUSHER_PREDICT_DISTANCE = 4;
 
-export const SPAWN_GHOST_SCORE_STEP = 35;
+export const SPAWN_GHOST_SCORE_STEP = 50;
 
 export const EMPTY = 0;
 export const WALL = 1;
