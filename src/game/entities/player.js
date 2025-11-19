@@ -1,4 +1,4 @@
-import { TILE_SIZE, COLS, ROWS, PACMAN_SPEED, BLINK_COOLDOWN, EMP_COOLDOWN, EMP_DURATION, EMP_RADIUS } from '../../config/constants';
+import { TILE_SIZE, COLS, ROWS, PACMAN_SPEED, BLINK_COOLDOWN, EMP_COOLDOWN, EMP_DURATION, EMP_RADIUS, EMP_STUN_DURATION } from '../../config/constants';
 import { snap, isWall, findNearestSafeSpot } from '../utils/physics';
 
 export const performBlink = (state) => {
@@ -54,8 +54,8 @@ export const performEMP = (state) => {
     state.particles.push({ type: 'shockwave', x: p.x, y: p.y, life: 60, color: '#00ff00' });
     state.ghosts.forEach(g => {
         const dist = Math.hypot(g.x - p.x, g.y - p.y);
-        if (dist <= EMP_RADIUS) {
-            g.stunTimer = EMP_DURATION;
+        if (dist <= EMP_RADIUS * TILE_SIZE) {
+            g.stunTimer = EMP_STUN_DURATION;
             for (let i = 0; i < 5; i++) state.particles.push({ x: g.x, y: g.y, vx: (Math.random() - 0.5) * 4, vy: (Math.random() - 0.5) * 4, life: 40, color: '#fff' });
         }
     });

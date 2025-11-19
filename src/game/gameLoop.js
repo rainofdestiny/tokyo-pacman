@@ -1,6 +1,6 @@
 import { TILE_SIZE, DOT, EMPTY, SPAWN_GHOST_SCORE_STEP } from '../config/constants';
 import { updatePlayer } from './entities/player';
-import { updateGhosts, spawnRandomGhost } from './entities/ghosts';
+import { updateGhosts, spawnNextGhost } from './entities/ghosts';
 
 // Фиксированный тикрейт (60 тиков в секунду)
 export const TICK_RATE = 60;
@@ -83,7 +83,7 @@ export const updateGame = (state, setScore, handleGameOver, isGameOver) => {
         setScore(state.score);
 
         if (state.score > 0 && state.score % SPAWN_GHOST_SCORE_STEP === 0 && state.ghostsSpawned < state.score / SPAWN_GHOST_SCORE_STEP) {
-            spawnRandomGhost(state);
+            spawnNextGhost(state);
             state.ghostsSpawned++;
         }
     }

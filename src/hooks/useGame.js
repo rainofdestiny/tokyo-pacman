@@ -7,7 +7,7 @@ import {
 import { generateMaze, getSafeSpawns } from '../game/map/generator';
 import { updateGame, TICK_RATE, TICK_DURATION } from '../game/gameLoop';
 import { performBlink, performEMP } from '../game/entities/player';
-import { spawnRandomGhost } from '../game/entities/ghosts';
+import { spawnNextGhost } from '../game/entities/ghosts';
 import { drawGame } from '../game/renderer';
 
 export const useGameLoop = (canvasRef) => {
@@ -58,12 +58,13 @@ export const useGameLoop = (canvasRef) => {
             },
             ghosts: [],
             ghostsSpawned: 0,
+            ghostSpawnIndex: 0,
             levelCompleting: false,
             remainingDots: dotCount
         };
 
         for (let i = 0; i < 3; i++) {
-            spawnRandomGhost(gameState.current);
+            spawnNextGhost(gameState.current);
         }
 
         setScore(0);

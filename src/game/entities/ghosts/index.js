@@ -1,6 +1,6 @@
-import { spawnRandomGhost } from './GhostFactory';
+import { spawnNextGhost } from './GhostFactory';
 
-export { spawnRandomGhost };
+export { spawnNextGhost };
 
 export const updateGhosts = (state, dt, handleGameOver) => {
     // Normalize time: constants are for 60 FPS

@@ -148,11 +148,18 @@ const TokyoPacman = () => {
                                 <div className="ghost-desc">An ordinary ghost</div>
                             </div>
                         </div>
-                        <div className="ghost-item" style={{ borderColor: '#ff007c' }}>
-                            <div className="ghost-head" style={{ background: '#ff007c' }}></div>
+                        <div className="ghost-item" style={{ borderColor: '#ffaa00' }}>
+                            <div className="ghost-head" style={{ background: '#ffaa00' }}></div>
                             <div className="ghost-data">
-                                <div className="ghost-name" style={{ color: '#ff007c' }}>HUNTER</div>
-                                <div className="ghost-desc">Relentless pursuit.</div>
+                                <div className="ghost-name" style={{ color: '#ffaa00' }}>GLITCH</div>
+                                <div className="ghost-desc">Random teleports.</div>
+                            </div>
+                        </div>
+                        <div className="ghost-item" style={{ borderColor: '#8a2be2' }}>
+                            <div className="ghost-head" style={{ background: '#8a2be2' }}></div>
+                            <div className="ghost-data">
+                                <div className="ghost-name" style={{ color: '#8a2be2' }}>PHANTOM</div>
+                                <div className="ghost-desc">Walks through walls.</div>
                             </div>
                         </div>
                         <div className="ghost-item" style={{ borderColor: '#00ffff' }}>
@@ -162,12 +169,11 @@ const TokyoPacman = () => {
                                 <div className="ghost-desc">Extreme velocity.</div>
                             </div>
                         </div>
-
-                        <div className="ghost-item" style={{ borderColor: '#ffaa00' }}>
-                            <div className="ghost-head" style={{ background: '#ffaa00' }}></div>
+                        <div className="ghost-item" style={{ borderColor: '#ff007c' }}>
+                            <div className="ghost-head" style={{ background: '#ff007c' }}></div>
                             <div className="ghost-data">
-                                <div className="ghost-name" style={{ color: '#ffaa00' }}>GLITCH</div>
-                                <div className="ghost-desc">Random teleports.</div>
+                                <div className="ghost-name" style={{ color: '#ff007c' }}>HUNTER</div>
+                                <div className="ghost-desc">Relentless pursuit.</div>
                             </div>
                         </div>
                         <div className="ghost-item" style={{ borderColor: '#2123CF' }}>
@@ -175,13 +181,6 @@ const TokyoPacman = () => {
                             <div className="ghost-data">
                                 <div className="ghost-name" style={{ color: '#2123CF' }}>GEMINI</div>
                                 <div className="ghost-desc">Splits & merges.</div>
-                            </div>
-                        </div>
-                        <div className="ghost-item" style={{ borderColor: '#8a2be2' }}>
-                            <div className="ghost-head" style={{ background: '#8a2be2' }}></div>
-                            <div className="ghost-data">
-                                <div className="ghost-name" style={{ color: '#8a2be2' }}>PHANTOM</div>
-                                <div className="ghost-desc">Walks through walls.</div>
                             </div>
                         </div>
                         <div className="ghost-item" style={{ borderColor: '#5fdf89' }}>
