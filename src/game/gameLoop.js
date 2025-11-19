@@ -88,7 +88,7 @@ export const updateGame = (state, setScore, handleGameOver, isGameOver) => {
         regenerateDots(state);
 
         // Бонус за прохождение уровня
-        state.score += 500;
+        state.score += 50;
         setScore(state.score);
 
         // Сбрасываем флаг через небольшую задержку
