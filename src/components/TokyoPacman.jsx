@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 // Правильный путь к хуку
 import { useGameLoop } from '../hooks/useGame';
 // Правильный путь к конфигу
@@ -11,18 +11,39 @@ import Leaderboard from './Leaderboard';
 
 const TokyoPacman = () => {
     const canvasRef = useRef(null);
-    const { score, gameOver, gameStarted, dashCD, invisCD, empCD, isInvis, initGame, getGameDuration } = useGameLoop(canvasRef);
+    const [tileSize, setTileSize] = useState(TILE_SIZE);
+
+    const calculateTileSize = () => {
+        const marginVw = 5;
+        const marginPx = (window.innerWidth * marginVw) / 100;
+        const panelWidth = 280;
+        const gap = 8;
+        const skillsHeight = 50;
+        const availableWidth = window.innerWidth - 2 * marginPx - 2 * panelWidth - gap;
+        const availableHeight = window.innerHeight - skillsHeight;
+        const tileW = Math.floor(availableWidth / COLS);
+        const tileH = Math.floor(availableHeight / ROWS);
+        setTileSize(Math.max(16, Math.min(tileW, tileH, 32)));
+    };
+
+    useEffect(() => {
+        calculateTileSize();
+        window.addEventListener('resize', calculateTileSize);
+        return () => window.removeEventListener('resize', calculateTileSize);
+    }, []);
+
+    const { score, gameOver, gameStarted, dashCD, invisCD, empCD, isInvis, initGame, getGameDuration } = useGameLoop(canvasRef, tileSize);
 
     const getProgress = (current, max) => { if (current === 0) return 100; return ((max - current) / max) * 100; };
     const dashPct = getProgress(dashCD, BLINK_COOLDOWN);
     const empPct = getProgress(empCD, EMP_COOLDOWN);
     const ghostPct = getProgress(invisCD, INVIS_COOLDOWN);
 
-    const canvasHeight = ROWS * TILE_SIZE;
+    const canvasHeight = ROWS * tileSize;
     const skillsHeight = 50;
-    const gap = 15;
+    const gap = 8;
     const borderOffset = 4;
-    const totalCenterHeight = canvasHeight + borderOffset + gap + skillsHeight;
+    const totalPanelHeight = canvasHeight + skillsHeight + gap; // panels height = canvas + skills + gap
 
     const renderSkill = (keyCode, name, currentCD, maxCD, pct, unlockScore, isActive = false) => {
         const isLocked = score < unlockScore;
@@ -54,7 +75,7 @@ const TokyoPacman = () => {
         <div className="layout-wrapper">
 
             {/* ЛЕВАЯ ПАНЕЛЬ: ОЧКИ + ЛИДЕРБОРД */}
-            <div className="panel left-panel" style={{ height: totalCenterHeight }}>
+            <div className="panel left-panel" style={{ height: totalPanelHeight }}>
                 <div className="panel-content">
 
                     <div className="stat-block" style={{ marginBottom: '20px' }}>
@@ -80,7 +101,7 @@ const TokyoPacman = () => {
             {/* ЦЕНТР: ИГРА + СКИЛЛЫ */}
             <div className="game-center" style={{ display: 'flex', flexDirection: 'column', gap: `${gap}px` }}>
                 <div className="canvas-border">
-                    <canvas ref={canvasRef} width={COLS * TILE_SIZE} height={ROWS * TILE_SIZE} />
+                    <canvas ref={canvasRef} width={COLS * tileSize} height={ROWS * tileSize} />
 
                     {(!gameStarted || gameOver) && (
                         <div className="game-overlay">
@@ -117,7 +138,7 @@ const TokyoPacman = () => {
             </div>
 
             {/* ПРАВАЯ ПАНЕЛЬ: ПРИЗРАКИ */}
-            <div className="panel right-panel" style={{ height: totalCenterHeight }}>
+            <div className="panel right-panel" style={{ height: totalPanelHeight }}>
                 <div className="panel-content">
                     <div className="ghost-list">
                         <div className="ghost-item" style={{ borderColor: '#ffffff' }}>
@@ -170,10 +191,10 @@ const TokyoPacman = () => {
                                 <div className="ghost-desc">Leaves mines.</div>
                             </div>
                         </div>
-                        <div className="ghost-item" style={{ borderColor: '#f7b731' }}>
-                            <div className="ghost-head" style={{ background: '#f7b731' }}></div>
+                        <div className="ghost-item" style={{ borderColor: '#E37209' }}>
+                            <div className="ghost-head" style={{ background: '#E37209' }}></div>
                             <div className="ghost-data">
-                                <div className="ghost-name" style={{ color: '#f7b731' }}>ORACLE [SOON]</div>
+                                <div className="ghost-name" style={{ color: '#E37209' }}>ORACLE [SOON]</div>
                                 <div className="ghost-desc">Predicts the position.</div>
                             </div>
                         </div>

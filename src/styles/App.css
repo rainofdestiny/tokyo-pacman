@@ -14,16 +14,15 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
+    margin: 0 5vw;
     background: radial-gradient(circle at center, #1a1a2e 0%, #000000 100%);
-    gap: 20px;
+    gap: 8px;
 }
 
 .panel {
     width: 280px;
     display: flex;
     flex-direction: column;
-    /* Высота задается инлайн в JSX для идеальной синхронизации с канвасом,
-     но здесь можно оставить auto или 100% */
 }
 
 .panel-content {

@@ -71,7 +71,7 @@ export const updateGame = (state, setScore, handleGameOver, isGameOver) => {
     let gy = Math.floor(state.player.y / TILE_SIZE);
     if (state.grid[gy] && state.grid[gy][gx] === DOT) {
         state.grid[gy][gx] = EMPTY;
-        state.score += 10;
+        state.score += 1;
         setScore(state.score);
 
         if (state.score > 0 && state.score % SPAWN_GHOST_SCORE_STEP === 0 && state.ghostsSpawned < state.score / SPAWN_GHOST_SCORE_STEP) {

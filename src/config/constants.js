@@ -22,9 +22,9 @@ export const GEMINI_MERGED_DURATION = 30 * 60;
 export const PHANTOM_PHASE_DURATION = 5 * 60; // Время прохода сквозь стены (~6-7 сек)
 export const PHANTOM_COOLDOWN = 15 * 60;       // Перезарядка (~15 сек)
 
-export const UNLOCK_SCORE_BLINK = 100;
-export const UNLOCK_SCORE_EMP = 500;
-export const UNLOCK_SCORE_INVIS = 1000;
+export const UNLOCK_SCORE_BLINK = 10;
+export const UNLOCK_SCORE_EMP = 50;
+export const UNLOCK_SCORE_INVIS = 100;
 
 export const SPAWN_GHOST_SCORE_STEP = 500;
 
