@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/tokyo-pacman/static/css/main.42287d51.css",
-    "main.js": "/tokyo-pacman/static/js/main.66da96e3.js",
+    "main.css": "/tokyo-pacman/static/css/main.c2704561.css",
+    "main.js": "/tokyo-pacman/static/js/main.d179c65d.js",
     "static/js/453.cd21f282.chunk.js": "/tokyo-pacman/static/js/453.cd21f282.chunk.js",
     "index.html": "/tokyo-pacman/index.html",
-    "main.42287d51.css.map": "/tokyo-pacman/static/css/main.42287d51.css.map",
-    "main.66da96e3.js.map": "/tokyo-pacman/static/js/main.66da96e3.js.map",
+    "main.c2704561.css.map": "/tokyo-pacman/static/css/main.c2704561.css.map",
+    "main.d179c65d.js.map": "/tokyo-pacman/static/js/main.d179c65d.js.map",
     "453.cd21f282.chunk.js.map": "/tokyo-pacman/static/js/453.cd21f282.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.42287d51.css",
-    "static/js/main.66da96e3.js"
+    "static/css/main.c2704561.css",
+    "static/js/main.d179c65d.js"
   ]
 }
