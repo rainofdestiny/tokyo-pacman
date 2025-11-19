@@ -117,11 +117,11 @@ const getVectorDirection = (grid, g, targetX, targetY, ignoreWalls = false) => {
 export const spawnRandomGhost = (state) => {
     const type = GHOST_TYPES[Math.floor(Math.random() * GHOST_TYPES.length)];
     const colors = {
-        'HUNTER': '#ff0044',
+        'HUNTER': '#ff007c',
         'SPEEDSTER': '#00ffff',
-        'AMBUSHER': '#ff55ff',
+        'GHOST': '#ffffff',
         'GLITCH': '#ffaa00',
-        'GEMINI': '#ffffff',
+        'GEMINI': '#2123CF',
         'PHANTOM': '#8a2be2'
     };
 
@@ -440,7 +440,7 @@ export const updateGhosts = (state, dt, handleGameOver) => {
                         useAStar = true;
                         break;
 
-                    case 'AMBUSHER':
+                    case 'GHOST':
                         // Ambusher целится впереди последней известной позиции
                         if (playerVisible) {
                             const pDir = getPlayerDirectionVector(p);

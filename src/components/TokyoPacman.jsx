@@ -119,12 +119,18 @@ const TokyoPacman = () => {
             {/* ПРАВАЯ ПАНЕЛЬ: ПРИЗРАКИ */}
             <div className="panel right-panel" style={{ height: totalCenterHeight }}>
                 <div className="panel-content">
-                    <h2 className="panel-title danger">GHOSTS</h2>
                     <div className="ghost-list">
-                        <div className="ghost-item" style={{ borderColor: '#ff0044' }}>
-                            <div className="ghost-head" style={{ background: '#ff0044' }}></div>
+                        <div className="ghost-item" style={{ borderColor: '#ffffff' }}>
+                            <div className="ghost-head" style={{ background: '#ffffff' }}></div>
                             <div className="ghost-data">
-                                <div className="ghost-name" style={{ color: '#ff0044' }}>HUNTER</div>
+                                <div className="ghost-name" style={{ color: '#ffffff' }}>GHOST</div>
+                                <div className="ghost-desc">An ordinary ghost</div>
+                            </div>
+                        </div>
+                        <div className="ghost-item" style={{ borderColor: '#ff007c' }}>
+                            <div className="ghost-head" style={{ background: '#ff007c' }}></div>
+                            <div className="ghost-data">
+                                <div className="ghost-name" style={{ color: '#ff007c' }}>HUNTER</div>
                                 <div className="ghost-desc">Relentless pursuit.</div>
                             </div>
                         </div>
@@ -135,13 +141,7 @@ const TokyoPacman = () => {
                                 <div className="ghost-desc">Extreme velocity.</div>
                             </div>
                         </div>
-                        <div className="ghost-item" style={{ borderColor: '#ff55ff' }}>
-                            <div className="ghost-head" style={{ background: '#ff55ff' }}></div>
-                            <div className="ghost-data">
-                                <div className="ghost-name" style={{ color: '#ff55ff' }}>AMBUSHER</div>
-                                <div className="ghost-desc">Intercepts path.</div>
-                            </div>
-                        </div>
+
                         <div className="ghost-item" style={{ borderColor: '#ffaa00' }}>
                             <div className="ghost-head" style={{ background: '#ffaa00' }}></div>
                             <div className="ghost-data">
@@ -149,10 +149,10 @@ const TokyoPacman = () => {
                                 <div className="ghost-desc">Random teleports.</div>
                             </div>
                         </div>
-                        <div className="ghost-item" style={{ borderColor: '#ffffff' }}>
-                            <div className="ghost-head" style={{ background: '#ffffff' }}></div>
+                        <div className="ghost-item" style={{ borderColor: '#2123CF' }}>
+                            <div className="ghost-head" style={{ background: '#2123CF' }}></div>
                             <div className="ghost-data">
-                                <div className="ghost-name" style={{ color: '#ffffff' }}>GEMINI</div>
+                                <div className="ghost-name" style={{ color: '#2123CF' }}>GEMINI</div>
                                 <div className="ghost-desc">Splits & merges.</div>
                             </div>
                         </div>
@@ -161,6 +161,20 @@ const TokyoPacman = () => {
                             <div className="ghost-data">
                                 <div className="ghost-name" style={{ color: '#8a2be2' }}>PHANTOM</div>
                                 <div className="ghost-desc">Walks through walls.</div>
+                            </div>
+                        </div>
+                        <div className="ghost-item" style={{ borderColor: '#5fdf89' }}>
+                            <div className="ghost-head" style={{ background: '#5fdf89' }}></div>
+                            <div className="ghost-data">
+                                <div className="ghost-name" style={{ color: '#5fdf89' }}>TRIXTER [SOON]</div>
+                                <div className="ghost-desc">Leaves mines.</div>
+                            </div>
+                        </div>
+                        <div className="ghost-item" style={{ borderColor: '#f7b731' }}>
+                            <div className="ghost-head" style={{ background: '#f7b731' }}></div>
+                            <div className="ghost-data">
+                                <div className="ghost-name" style={{ color: '#f7b731' }}>ORACLE [SOON]</div>
+                                <div className="ghost-desc">Predicts the position.</div>
                             </div>
                         </div>
                     </div>

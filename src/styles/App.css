@@ -49,7 +49,7 @@ body {
 }
 
 .panel-title.danger {
-    color: #ff0044;
+    color: #ff007c;
 }
 
 /* --- SCORE BLOCK --- */
@@ -283,7 +283,7 @@ canvas {
 }
 
 .game-over-text {
-    color: #ff0044;
+    color: #ff007c;
     font-size: 1.5rem;
     margin: 0 0 15px 0;
     animation: pulse 1s infinite;

@@ -35,7 +35,7 @@ export const DOT = 2;
 
 // Заменили CONSTRUCTOR на PHANTOM
 export const GHOST_TYPES = [
-    'HUNTER', 'SPEEDSTER', 'AMBUSHER', 'GLITCH', 'GEMINI', 'PHANTOM'
+    'HUNTER', 'SPEEDSTER', 'GHOST', 'GLITCH', 'GEMINI', 'PHANTOM'
 ];
 
 // --- GHOST AI & VISION ---
