@@ -213,15 +213,24 @@ export const useGameLoop = (canvasRef) => {
                 }
                 return;
             } else if (e.code === 'KeyF') {
-                if (p.invisTimer === 0) {
+                const p = gameState.current.player;
+                if (p.invisTimer === 0 && score >= UNLOCK_SCORE_INVIS) {
                     p.invisActive = INVIS_DURATION;
                     p.invisTimer = INVIS_COOLDOWN;
-                    s.particles.push({
-                        type: 'shockwave',
-                        x: p.x,
-                        y: p.y,
-                        life: 40
-                    });
+
+                    // Shimmer/distortion effect - concentric waves
+                    for (let ring = 0; ring < 3; ring++) {
+                        gameState.current.particles.push({
+                            type: 'shockwave',
+                            x: p.x,
+                            y: p.y,
+                            life: 25 - ring * 5,
+                            color: '#b19cd9',
+                            speed: 1.5 + ring * 0.3
+                        });
+                    }
+
+                    setAbilities(prev => ({ ...prev, invisCD: INVIS_COOLDOWN }));
                 }
                 return;
             } else if (e.code === 'KeyQ') {

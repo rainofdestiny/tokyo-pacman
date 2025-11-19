@@ -73,14 +73,25 @@ export const drawGame = (ctx, state) => {
     const p = state.player;
     state.ghosts.forEach(g => {
         const isStunned = g.stunTimer > 0;
-        const isChasing = g.type === 'HUNTER' || (g.playerMemoryTimer && g.playerMemoryTimer > 0);
+        const isChasing = !p.invisActive && (g.type === 'HUNTER' || (g.playerMemoryTimer && g.playerMemoryTimer > 0));
 
         let color = g.color;
+        let alpha = 1.0;
+
         if (isStunned) {
             color = '#555';
         } else if (!isChasing) {
-            ctx.globalAlpha = 0.6;
+            alpha = 0.6;
+        } else if (g.type !== 'HUNTER' && g.getMemoryState) {
+            const memoryState = g.getMemoryState();
+            if (memoryState === 'RECENT') {
+                alpha = 0.9;
+            } else if (memoryState === 'FADING') {
+                alpha = 0.7;
+            }
         }
+
+        ctx.globalAlpha = alpha;
 
         const shake = isStunned ? (Math.random() - 0.5) * 4 : 0;
         const floatY = Math.sin(frame * 0.1 + (g.color ? g.color.length : 0)) * 2;
@@ -157,11 +168,15 @@ export const drawGame = (ctx, state) => {
     for (let i = 0; i < particleCount; i++) {
         const pt = state.particles[i];
         if (pt.type === 'shockwave') {
+            const speed = pt.speed || 1;
+            const maxLife = pt.life > 50 ? 60 : 50;
             ctx.strokeStyle = pt.color || '#fff';
             ctx.lineWidth = 3;
+            ctx.globalAlpha = pt.life / maxLife;
             ctx.beginPath();
-            ctx.arc(pt.x, pt.y, (60 - pt.life) * 4, 0, Math.PI * 2);
+            ctx.arc(pt.x, pt.y, (maxLife - pt.life) * 4 * speed, 0, Math.PI * 2);
             ctx.stroke();
+            ctx.globalAlpha = 1.0;
         } else if (pt.type === 'afterimage') {
             ctx.save();
             ctx.globalAlpha = (pt.life / pt.maxLife) * 0.5;

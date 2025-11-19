@@ -29,34 +29,72 @@ export const performBlink = (state) => {
     const safeSpot = findNearestSafeSpot(state.grid, landX, landY);
 
     if (safeSpot) {
-        // Эффект частиц (след)
-        for (let i = 0; i <= 10; i++) {
+        // Simple afterimage trail - player clones fading out
+        for (let i = 0; i <= 8; i++) {
+            const t = i / 8;
             state.particles.push({
-                // Простая линейная интерполяция для красоты,
-                // при телепорте через край будет линия через весь экран, это выглядит как варп
-                x: p.x + (safeSpot.x - p.x) * (i / 10),
-                y: p.y + (safeSpot.y - p.y) * (i / 10),
-                vx: (Math.random() - 0.5) * 2,
-                vy: (Math.random() - 0.5) * 2,
-                life: 15,
-                color: '#00ffff'
+                type: 'afterimage',
+                x: p.x + (safeSpot.x - p.x) * t,
+                y: p.y + (safeSpot.y - p.y) * t,
+                life: 20 - i * 2,
+                maxLife: 20,
+                color: '#ffff00'
             });
         }
 
         p.x = safeSpot.x;
         p.y = safeSpot.y;
-        p.dashTimer = BLINK_COOLDOWN;
     }
+
+    p.dashTimer = BLINK_COOLDOWN;
 };
 
 export const performEMP = (state) => {
     const p = state.player;
-    state.particles.push({ type: 'shockwave', x: p.x, y: p.y, life: 60, color: '#00ff00' });
+
+    // Multiple expanding rings for better effect
+    for (let i = 0; i < 3; i++) {
+        setTimeout(() => {
+            state.particles.push({
+                type: 'shockwave',
+                x: p.x,
+                y: p.y,
+                life: 50,
+                color: '#00ffff',
+                speed: 1 + i * 0.3
+            });
+        }, i * 100);
+    }
+
+    // Electric circle particles
+    for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 8) {
+        state.particles.push({
+            x: p.x,
+            y: p.y,
+            vx: Math.cos(angle) * 6,
+            vy: Math.sin(angle) * 6,
+            life: 30,
+            color: '#00ffff'
+        });
+    }
+
     state.ghosts.forEach(g => {
         const dist = Math.hypot(g.x - p.x, g.y - p.y);
         if (dist <= EMP_RADIUS * TILE_SIZE) {
             g.stunTimer = EMP_STUN_DURATION;
-            for (let i = 0; i < 5; i++) state.particles.push({ x: g.x, y: g.y, vx: (Math.random() - 0.5) * 4, vy: (Math.random() - 0.5) * 4, life: 40, color: '#fff' });
+
+            // Electric shock particles on hit ghost
+            for (let i = 0; i < 12; i++) {
+                const angle = (Math.PI * 2 * i) / 12;
+                state.particles.push({
+                    x: g.x,
+                    y: g.y,
+                    vx: Math.cos(angle) * 3,
+                    vy: Math.sin(angle) * 3,
+                    life: 25,
+                    color: '#ffff00'
+                });
+            }
         }
     });
     p.empTimer = EMP_COOLDOWN;

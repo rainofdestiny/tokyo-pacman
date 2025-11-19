@@ -1,223 +1,215 @@
 import { Ghost } from '../Ghost';
-import { GEMINI_SPLIT_DURATION, GEMINI_MERGED_DURATION, TILE_SIZE } from '../../../../config/constants';
-import { getNextStepAStar, getVectorDirection, isWall } from '../../../utils/physics';
+import { GEMINI_SPLIT_DURATION, GEMINI_MERGED_DURATION, GEMINI_MERGE_DISTANCE, TILE_SIZE } from '../../../../config/constants';
+import { getNextStepAStar, isWall } from '../../../utils/physics';
+import { canSeePlayer } from '../utils';
 
 export class Gemini extends Ghost {
     constructor(x, y, color) {
         super(x, y, 'GEMINI', color);
-        this.geminiState = 'MERGED'; // 'MERGED' or 'SPLIT'
-        this.abilityTimer = 180; // Start with 3s cooldown to prevent instant split
-        this.partnerId = null;
+        this.state = 'MERGED';
+        this.stateTimer = 0; // Ready to split immediately
+        this.clone = null;
         this.isClone = false;
+        this.originalGemini = null;
+
+        // Shared memory between twins
+        this.sharedMemory = {
+            playerX: null,
+            playerY: null,
+            memoryTimer: 0,
+            lastSeenBy: null
+        };
     }
 
     updateMemory(state, timeScale) {
-        // 1. Update timers
-        this.wanderTimer += timeScale;
-
-        // 2. Strict Vision Check (Override Ghost.js)
         const p = state.player;
-        // Use canSeePlayer from utils (imported via Ghost.js or directly)
-        // Since we can't easily import here without changing top, we assume super.updateMemory does the check
-        // BUT super sets a timer. We want INSTANT loss.
+        const dist = Math.hypot(this.x - p.x, this.y - p.y);
 
-        // Let's do our own check.
-        // We need to import canSeePlayer or use the one from super if possible.
-        // Ghost.js uses 'canSeePlayer' from './utils'.
-        // We can't access it easily unless we import it.
-        // Let's assume we can import it.
-        // Wait, I can't add imports easily.
-        // I will use super.updateMemory but then override the result.
+        // Get shared memory reference
+        const memory = this.isClone ? this.originalGemini.sharedMemory : this.sharedMemory;
 
-        super.updateMemory(state, timeScale);
-
-        // If timer is max (meaning we just saw them), keep it.
-        // If timer is decaying (meaning we lost them), CLEAR IT IMMEDIATELY.
-        // GHOST_MEMORY_DURATION is 180.
-        // We use < 180 to ensure that if we didn't see them THIS FRAME (timer would be 180), we forget.
-        if (this.playerMemoryTimer < 180) {
-            // We lost sight (even for 1 frame)
-            this.lastSeenPlayerX = null;
-            this.lastSeenPlayerY = null;
-            this.playerMemoryTimer = 0;
-            this.isChasing = false;
+        // Update shared memory timer
+        if (memory.memoryTimer > 0) {
+            memory.memoryTimer -= timeScale;
+            if (memory.memoryTimer < 0) memory.memoryTimer = 0;
         }
 
-        // 3. Shared Vision (only if SPLIT)
-        if (this.geminiState === 'SPLIT' && this.partnerId) {
-            const partner = state.ghosts.find(pg => pg.id === this.partnerId);
-            if (partner) {
-                // If partner sees player (timer is max), I see player
-                // Partner must see them RIGHT NOW (timer > 179)
-                if (partner.playerMemoryTimer > 179) {
-                    this.lastSeenPlayerX = partner.lastSeenPlayerX;
-                    this.lastSeenPlayerY = partner.lastSeenPlayerY;
-                    this.playerMemoryTimer = partner.playerMemoryTimer;
-                    this.isChasing = true;
-                }
-                // If partner ALSO doesn't see (timer < 180), and I don't see
-                // Then we both have null targets (handled by local check above)
+        this.wanderTimer += timeScale;
+
+        // Check if this Gemini can see the player
+        if (dist <= 10 * TILE_SIZE && !p.invisActive) {
+            const visible = canSeePlayer(state.grid, this.x, this.y, p.x, p.y, 10);
+
+            if (visible) {
+                // Update shared memory
+                memory.playerX = p.x;
+                memory.playerY = p.y;
+                memory.memoryTimer = 180;
+                memory.lastSeenBy = this.isClone ? 'clone' : 'original';
+
+                // Update own tracking
+                this.lastSeenPlayerX = p.x;
+                this.lastSeenPlayerY = p.y;
+                this.playerMemoryTimer = 180;
+                this.isChasing = true;
+                return;
             }
+        }
+
+        // Use shared memory if available
+        if (memory.memoryTimer > 0) {
+            this.lastSeenPlayerX = memory.playerX;
+            this.lastSeenPlayerY = memory.playerY;
+            this.playerMemoryTimer = memory.memoryTimer;
+            this.isChasing = true;
+        } else {
+            // Both lost the player - prepare to merge
+            this.isChasing = false;
+            this.playerMemoryTimer = 0;
         }
     }
 
     handleAbilityTimer(state, timeScale) {
-        // Only handles cooldown decrement
-        if (this.abilityTimer > 0) {
-            this.abilityTimer -= timeScale;
-            if (this.abilityTimer < 0) this.abilityTimer = 0;
-        }
-    }
-
-    decideDirection(state) {
-        // 0. Anti-Stuck Override (Inherited from Ghost)
-        if (this.checkStuck(state, 1)) {
-            if (this.dirX === 0 && this.dirY === 0) {
-                // Import getWanderDirection if needed, or just use random valid dir
-                // Since we can't easily import here without changing top of file, 
-                // let's rely on the fact that checkStuck sets forceUnstuckTimer
-                // and we can just pick a random direction here or let super handle it if we called super.
-                // But we are overriding. Let's just pick a random valid neighbor.
-                const dirs = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }];
-                const validDirs = dirs.filter(d => !isWall(state.grid, Math.floor((this.x + d.x * TILE_SIZE) / TILE_SIZE), Math.floor((this.y + d.y * TILE_SIZE) / TILE_SIZE)));
-                if (validDirs.length > 0) {
-                    const move = validDirs[Math.floor(Math.random() * validDirs.length)];
-                    this.dirX = move.x;
-                    this.dirY = move.y;
-                }
-            }
-            return;
+        if (this.stateTimer > 0) {
+            this.stateTimer -= timeScale;
+            if (this.stateTimer < 0) this.stateTimer = 0;
         }
 
-        const p = state.player;
-
-        // --- STATE: MERGED ---
-        if (this.geminiState === 'MERGED') {
-            // Standard Ghost Behavior (Wander or Chase)
-            super.decideDirection(state);
-
-            // Check for Split Condition
-            // 1. Can see player
-            // 2. Cooldown ready
-            if (this.isChasing && this.abilityTimer <= 0) {
+        if (this.state === 'MERGED') {
+            // Check if should split when seeing player
+            if (this.stateTimer <= 0 && this.isChasing && this.playerMemoryTimer > 120) {
                 this.split(state);
             }
-        }
+        } else if (this.state === 'SPLIT') {
+            // Check if should merge
+            const shouldMerge = this.stateTimer <= 0 || !this.isChasing;
 
-        // --- STATE: SPLIT ---
-        else if (this.geminiState === 'SPLIT') {
-            let targetX = null;
-            let targetY = null;
+            if (shouldMerge && this.clone) {
+                const distToClone = Math.hypot(this.x - this.clone.x, this.y - this.clone.y) / TILE_SIZE;
 
-            // Case 1: Chase Player (if visible/remembered)
-            if (this.isChasing) {
-                targetX = this.lastSeenPlayerX;
-                targetY = this.lastSeenPlayerY;
-            }
-            // Case 2: Merge (Chase Partner)
-            else {
-                const partner = state.ghosts.find(pg => pg.id === this.partnerId);
-                if (partner) {
-                    targetX = partner.x;
-                    targetY = partner.y;
-
-                    // Check for Merge Condition (Touch Partner)
-                    const dist = Math.hypot(this.x - partner.x, this.y - partner.y);
-                    if (dist < TILE_SIZE) {
-                        this.merge(state, partner);
-                        return; // Stop moving this frame after merge
-                    }
-                } else {
-                    // Partner missing (error state), revert to MERGED
-                    this.geminiState = 'MERGED';
-                    this.partnerId = null;
-                    super.decideDirection(state);
-                    return;
+                if (distToClone <= GEMINI_MERGE_DISTANCE) {
+                    this.merge(state);
                 }
-            }
-
-            // Execute Move
-            if (targetX !== null && targetY !== null) {
-                const bestMove = this.getChaseStep(state, targetX, targetY);
-                if (bestMove && (bestMove.x !== 0 || bestMove.y !== 0)) {
-                    this.dirX = bestMove.x;
-                    this.dirY = bestMove.y;
-                }
-            } else {
-                // No target (shouldn't happen if partner exists), wander
-                super.decideDirection(state);
             }
         }
     }
 
     split(state) {
-        const p = state.player;
+        this.state = 'SPLIT';
+        this.stateTimer = GEMINI_SPLIT_DURATION;
 
-        // Find a valid neighbor tile for the clone
-        // This prevents them from stacking perfectly and looking like one ghost
-        const dirs = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }];
-        let spawnX = this.x;
-        let spawnY = this.y;
+        // Find a position offset from current position
+        const offsets = [
+            { dx: 1, dy: 0 },
+            { dx: -1, dy: 0 },
+            { dx: 0, dy: 1 },
+            { dx: 0, dy: -1 },
+            { dx: 1, dy: 1 },
+            { dx: -1, dy: -1 },
+            { dx: 1, dy: -1 },
+            { dx: -1, dy: 1 }
+        ];
 
-        for (let d of dirs) {
-            const checkX = this.x + d.x * TILE_SIZE;
-            const checkY = this.y + d.y * TILE_SIZE;
-            const col = Math.floor(checkX / TILE_SIZE);
-            const row = Math.floor(checkY / TILE_SIZE);
+        let cloneX = this.x;
+        let cloneY = this.y;
 
-            if (!isWall(state.grid, col, row)) {
-                spawnX = checkX;
-                spawnY = checkY;
+        for (let offset of offsets) {
+            const testX = Math.floor((this.x + offset.dx * TILE_SIZE) / TILE_SIZE);
+            const testY = Math.floor((this.y + offset.dy * TILE_SIZE) / TILE_SIZE);
+
+            if (!isWall(state.grid, testX, testY)) {
+                cloneX = testX * TILE_SIZE + TILE_SIZE / 2;
+                cloneY = testY * TILE_SIZE + TILE_SIZE / 2;
                 break;
             }
         }
 
-        // Create Clone at the found position
-        const clone = new this.constructor(spawnX, spawnY, this.color);
-        clone.id = Math.random();
-        clone.geminiState = 'SPLIT';
-        clone.partnerId = this.id;
-        clone.isClone = true;
-        clone.isChasing = true;
-        clone.lastSeenPlayerX = this.lastSeenPlayerX;
-        clone.lastSeenPlayerY = this.lastSeenPlayerY;
-        clone.playerMemoryTimer = this.playerMemoryTimer;
+        // Create clone
+        this.clone = new Gemini(cloneX, cloneY, this.color);
+        this.clone.isClone = true;
+        this.clone.originalGemini = this;
+        this.clone.state = 'SPLIT';
+        this.clone.stateTimer = GEMINI_SPLIT_DURATION;
+        this.clone.dirX = -this.dirX;
+        this.clone.dirY = -this.dirY;
 
-        // Set Self to SPLIT
-        this.geminiState = 'SPLIT';
-        this.partnerId = clone.id;
+        state.ghosts.push(this.clone);
 
-        // Add Clone to Game
-        state.ghosts.push(clone);
+        // Particle effects
+        state.particles.push({
+            type: 'shockwave',
+            x: this.x,
+            y: this.y,
+            life: 30,
+            color: this.color
+        });
     }
 
-    merge(state, partner) {
-        if (this.isClone) {
-            // I am the clone, I disappear
-            const index = state.ghosts.indexOf(this);
-            if (index > -1) state.ghosts.splice(index, 1);
-        } else {
-            // I am the original, I become MERGED
-            this.geminiState = 'MERGED';
-            this.partnerId = null;
-            this.abilityTimer = 180; // 3 seconds cooldown after merge
+    merge(state) {
+        this.state = 'MERGED';
+        this.stateTimer = GEMINI_MERGED_DURATION;
 
-            // Partner (clone) will remove itself when it runs its update and sees I am MERGED? 
-            // Actually, better if the one detecting the merge handles both.
-            // But since we don't know execution order, let's handle it safely.
-
-            // If I am original, I remove the partner from the list
-            const index = state.ghosts.indexOf(partner);
-            if (index > -1) state.ghosts.splice(index, 1);
+        if (this.clone) {
+            const cloneIndex = state.ghosts.indexOf(this.clone);
+            if (cloneIndex !== -1) {
+                state.ghosts.splice(cloneIndex, 1);
+            }
+            this.clone = null;
         }
+
+        // Reset shared memory
+        this.sharedMemory = {
+            playerX: null,
+            playerY: null,
+            memoryTimer: 0,
+            lastSeenBy: null
+        };
+
+        state.particles.push({
+            type: 'shockwave',
+            x: this.x,
+            y: this.y,
+            life: 30,
+            color: this.color
+        });
     }
 
     getChaseStep(state, targetX, targetY) {
-        // Pure pathfinding, no logic
-        let bestMove = getNextStepAStar(state.grid, this.x, this.y, targetX, targetY);
-        if (!bestMove) {
-            bestMove = getVectorDirection(state.grid, this, targetX, targetY, false);
+        if (this.state === 'SPLIT' && !this.isChasing) {
+            // Move toward twin to merge
+            const target = this.isClone ? this.originalGemini : this.clone;
+            if (target) {
+                return getNextStepAStar(state.grid, this.x, this.y, target.x, target.y);
+            }
         }
-        return bestMove;
+
+        if (this.isChasing && this.state === 'SPLIT') {
+            // Strategic positioning: attack from different angles
+            const p = state.player;
+
+            if (this.isClone) {
+                // Clone tries to flank from the side
+                const angle = Math.atan2(p.y - this.y, p.x - this.x);
+                const flankAngle = angle + Math.PI / 2; // 90 degrees offset
+                const flankX = p.x + Math.cos(flankAngle) * 3 * TILE_SIZE;
+                const flankY = p.y + Math.sin(flankAngle) * 3 * TILE_SIZE;
+
+                return getNextStepAStar(state.grid, this.x, this.y, flankX, flankY);
+            } else {
+                // Original goes direct
+                return getNextStepAStar(state.grid, this.x, this.y, targetX, targetY);
+            }
+        }
+
+        return getNextStepAStar(state.grid, this.x, this.y, targetX, targetY);
+    }
+
+    update(state, timeScale, handleGameOver) {
+        // Don't update clones that have been removed
+        if (this.isClone && !this.originalGemini) {
+            return;
+        }
+
+        super.update(state, timeScale, handleGameOver);
     }
 }

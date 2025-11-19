@@ -2,34 +2,42 @@ import { TILE_SIZE } from '../../../config/constants';
 import { isWall } from '../../utils/physics';
 
 // Проверка видимости игрока призраком (line of sight)
-// Проверка видимости игрока призраком (line of sight)
 export const canSeePlayer = (grid, ghostX, ghostY, playerX, playerY, visionRange) => {
     const gCol = Math.floor(ghostX / TILE_SIZE);
     const gRow = Math.floor(ghostY / TILE_SIZE);
     const pCol = Math.floor(playerX / TILE_SIZE);
     const pRow = Math.floor(playerY / TILE_SIZE);
 
-    // 1. Проверяем дистанцию
+    // 1. Check distance
     const distInTiles = Math.hypot(pCol - gCol, pRow - gRow);
     if (distInTiles > visionRange) return false;
 
-    // 2. Проверяем line of sight (Raycasting)
-    // Используем алгоритм Брезенхема или просто шагаем по вектору с малым шагом
-    const dx = pCol - gCol;
-    const dy = pRow - gRow;
-    const steps = Math.max(Math.abs(dx), Math.abs(dy)) * 2; // 2 проверки на тайл для точности
+    // 2. Line of sight check using DDA (Digital Differential Analyzer)
+    const dx = Math.abs(pCol - gCol);
+    const dy = Math.abs(pRow - gRow);
+    const steps = Math.max(dx, dy);
 
-    for (let i = 1; i < steps; i++) {
-        const t = i / steps;
-        const checkCol = Math.round(gCol + dx * t);
-        const checkRow = Math.round(gRow + dy * t);
+    if (steps === 0) return true; // Same cell
+
+    const stepX = (pCol - gCol) / steps;
+    const stepY = (pRow - gRow) / steps;
+
+    // Check each step along the line
+    for (let i = 0; i <= steps; i++) {
+        const checkCol = Math.floor(gCol + stepX * i);
+        const checkRow = Math.floor(gRow + stepY * i);
+
+        // Skip ghost and player positions
+        if ((checkCol === gCol && checkRow === gRow) || (checkCol === pCol && checkRow === pRow)) {
+            continue;
+        }
 
         if (isWall(grid, checkCol, checkRow)) {
-            return false; // Стена блокирует обзор
+            return false; // Wall blocks vision
         }
     }
 
-    return true; // Видит игрока!
+    return true; // Can see player!
 };
 
 // Функция для блуждания (случайное направление)

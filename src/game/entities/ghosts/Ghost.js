@@ -86,14 +86,46 @@ export class Ghost {
         return false;
     }
 
+    getMemoryState() {
+        const timer = this.playerMemoryTimer;
+        if (timer > 120) return 'SEEING'; // 0-60 frames since lost sight
+        if (timer > 60) return 'RECENT'; // 60-120 frames
+        if (timer > 0) return 'FADING'; // 120-180 frames
+        return 'LOST'; // 180+ frames
+    }
+
     calculateSpeed(state) {
+        const memoryState = this.getMemoryState();
+
+        // Base speed modulation based on memory
+        let speedMultiplier = 1.0;
+        if (memoryState === 'FADING') {
+            speedMultiplier = 0.7;
+        } else if (memoryState === 'LOST') {
+            speedMultiplier = 0.5;
+        }
+
         const surgeCycle = 7200;
         const surgeStart = 6900;
         const isSurge = (state.frame % surgeCycle) > surgeStart;
-        return isSurge ? GHOST_SURGE_SPEED : GHOST_BASE_SPEED;
+        const baseSpeed = isSurge ? GHOST_SURGE_SPEED : GHOST_BASE_SPEED;
+
+        return baseSpeed * speedMultiplier;
     }
 
     updateMemory(state, timeScale) {
+        const p = state.player;
+
+        // Instantly forget player if they become invisible
+        if (p.invisActive) {
+            this.playerMemoryTimer = 0;
+            this.lastSeenPlayerX = null;
+            this.lastSeenPlayerY = null;
+            this.isChasing = false;
+            this.wanderTimer += timeScale;
+            return;
+        }
+
         if (this.playerMemoryTimer > 0) {
             this.playerMemoryTimer -= timeScale;
             if (this.playerMemoryTimer < 0) this.playerMemoryTimer = 0;
@@ -106,7 +138,6 @@ export class Ghost {
         if (this.visionCheckTimer >= VISION_CHECK_INTERVAL) {
             this.visionCheckTimer = 0;
 
-            const p = state.player;
             const dist = Math.hypot(this.x - p.x, this.y - p.y);
 
             if (dist > GHOST_VISION_RANGE * TILE_SIZE) {
@@ -114,7 +145,7 @@ export class Ghost {
                 return;
             }
 
-            const visible = !p.invisActive && canSeePlayer(state.grid, this.x, this.y, p.x, p.y, GHOST_VISION_RANGE);
+            const visible = canSeePlayer(state.grid, this.x, this.y, p.x, p.y, GHOST_VISION_RANGE);
 
             if (visible) {
                 this.lastSeenPlayerX = p.x;

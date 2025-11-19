@@ -5,17 +5,17 @@ export const ROWS = 17;
 export const PACMAN_SPEED = 2.5;
 
 export const BLINK_COOLDOWN = 5 * 60;
-export const INVIS_COOLDOWN = 10 * 60;
-export const EMP_COOLDOWN = 8 * 60;
+export const INVIS_COOLDOWN = 13 * 60;
+export const EMP_COOLDOWN = 9 * 60;
 
 export const UNLOCK_SCORE_BLINK = 0;
 export const UNLOCK_SCORE_INVIS = 0;
 export const UNLOCK_SCORE_EMP = 0;
 
 export const BLINK_DISTANCE = 5;
-export const INVIS_DURATION = 5 * 60;
+export const INVIS_DURATION = 3 * 60;
 export const EMP_RADIUS = 5;
-export const EMP_DURATION = 3 * 60;
+export const EMP_DURATION = 2 * 60;
 export const EMP_STUN_DURATION = 3 * 60;
 
 // ============================================
@@ -38,8 +38,8 @@ export const GHOST_COLORS = {
 // Ghost AI parameters
 export const GHOST_VISION_RANGE = 10;
 export const GHOST_MEMORY_DURATION = 180;
-export const GHOST_BASE_SPEED = 1.8;
-export const GHOST_SURGE_SPEED = 2.4;
+export const GHOST_BASE_SPEED = 2.5;
+export const GHOST_SURGE_SPEED = 5;
 export const GHOST_WANDER_CHANGE_DIR = 3 * 60;
 
 // Gemini-specific parameters
@@ -64,7 +64,7 @@ export const SPEEDSTER_SLOW_MULTIPLIER = 0.75;
 // Ambusher-specific parameters
 export const AMBUSHER_PREDICT_DISTANCE = 4;
 
-export const SPAWN_GHOST_SCORE_STEP = 25;
+export const SPAWN_GHOST_SCORE_STEP = 35;
 
 export const EMPTY = 0;
 export const WALL = 1;
